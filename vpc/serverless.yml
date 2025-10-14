@@ -1,0 +1,17 @@
+service: vpc
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+
+resources:
+  - ${file(resources.yml)}
+
+# Outputs exportados para que otros servicios los lean
+outputs:
+  VpcId: ${cf:${self:service}-${self:provider.stage}.VpcId}
+  PrivateSubnetIds: ${cf:${self:service}-${self:provider.stage}.PrivateSubnetIds}
+  SecurityGroupId: ${cf:${self:service}-${self:provider.stage}.SecurityGroupId}
