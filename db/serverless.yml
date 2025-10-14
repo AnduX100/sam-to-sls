@@ -1,0 +1,13 @@
+service: db
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+
+resources:
+  - ${file(resources.yml)}
+
+outputs:
+  AppTableName: ${cf:${self:service}-${self:provider.stage}.AppTableName}
