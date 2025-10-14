@@ -20,25 +20,27 @@ jobs:
       - name: Install Serverless CLI
         run: npm i -g serverless@latest
 
-      # (Opcional) Serverless Pro
       - name: Serverless Pro login (optional)
         if: ${{ secrets.SLS_ACCESS_KEY != '' }}
         run: sls login --apiKey ${{ secrets.SLS_ACCESS_KEY }}
-
 
       - name: Install AWS CLI
         run: |
           sudo apt-get update -y
           sudo apt-get install -y awscli
+          aws --version
 
       - name: STS whoami
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ env.AWS_REGION }}
-        run: aws sts get-caller-identity
+        run: |
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Stage : $STAGE"
+          echo "Region: $AWS_REGION"
+          aws sts get-caller-identity
 
-      # Desplegar VPC primero
       - name: Deploy VPC
         working-directory: vpc
         env:
@@ -47,7 +49,6 @@ jobs:
           AWS_DEFAULT_REGION: ${{ env.AWS_REGION }}
         run: sls deploy --stage $STAGE --region $AWS_REGION -v --debug
 
-      # Luego DB
       - name: Deploy DB
         working-directory: db
         env:
@@ -56,7 +57,6 @@ jobs:
           AWS_DEFAULT_REGION: ${{ env.AWS_REGION }}
         run: sls deploy --stage $STAGE --region $AWS_REGION -v --debug
 
-      # Al final API (ya existen los outputs de vpc y db)
       - name: Deploy API
         working-directory: api
         env:
