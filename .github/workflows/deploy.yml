@@ -2,15 +2,12 @@ name: deploy
 
 on:
   push:
-    branches:
-      - main
-      - dev
+    branches: [main, dev]
 
 jobs:
   sls-deploy:
     runs-on: ubuntu-latest
 
-    # Variables por rama (dev vs prod)
     env:
       AWS_REGION: us-east-1
       STAGE: ${{ github.ref_name == 'main' && 'prod' || 'dev' }}
@@ -27,20 +24,35 @@ jobs:
       - name: Install Serverless CLI
         run: npm i -g serverless@latest
 
-      - name: Show versions
-        run: |
-          node -v
-          sls --version
-
-      # (Opcional) Login a Serverless Pro con Access Key (evita abrir navegador)
+      # (Opcional) Login a Serverless Pro solo si tienes SLS_ACCESS_KEY
       - name: Serverless Pro login
         if: ${{ secrets.SLS_ACCESS_KEY != '' }}
         run: sls login --apiKey ${{ secrets.SLS_ACCESS_KEY }}
 
+      # Instala AWS CLI solo para validar credenciales/cuenta (no es obligatorio para el deploy)
+      - name: Install AWS CLI
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y awscli
+          aws --version
+
+      # Confirma que las credenciales/region están bien
+      - name: Who am I (STS)
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ env.AWS_REGION }}
+        run: |
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Stage : $STAGE"
+          echo "Region: $AWS_REGION"
+          aws sts get-caller-identity
+
+      # Despliegue con Compose (sin sls print para evitar resolver ${cf:...} por adelantado)
       - name: Deploy (Compose)
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ env.AWS_REGION }}
+          AWS_DEFAULT_REGION: ${{ env.AWS_REGION }}
         run: |
-          sls deploy --config serverless-compose.yml --stage $STAGE --region $AWS_REGION -v
+          sls deploy --config serverless-compose.yml --stage $STAGE --region $AWS_REGION -v --debug
