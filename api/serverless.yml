@@ -1,0 +1,26 @@
+service: api
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+  environment:
+    TABLE_NAME: ${cf:db-${self:provider.stage}.AppTableName}
+
+functions:
+  hello:
+    handler: handler.hello
+    memorySize: 256
+    timeout: 10
+    events:
+      - httpApi:
+          method: GET
+          path: /hello
+
+package:
+  individually: true
+  patterns:
+    - '!**/*'
+    - 'handler.js'
