@@ -1,4 +1,4 @@
-service: vpc
+service: sam2sls-vpc
 frameworkVersion: '3'
 
 provider:
