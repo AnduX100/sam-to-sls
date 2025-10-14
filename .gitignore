@@ -1,0 +1,13 @@
+node_modules/
+.npm/
+package-lock.json
+
+.serverless/
+.aws-sam/
+.artifacts/
+.webpack/
+.esbuild/
+
+.DS_Store
+Thumbs.db
+.env
