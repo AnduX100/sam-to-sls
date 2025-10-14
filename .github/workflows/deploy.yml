@@ -1,0 +1,46 @@
+name: deploy
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+jobs:
+  sls-deploy:
+    runs-on: ubuntu-latest
+
+    # Variables por rama (dev vs prod)
+    env:
+      AWS_REGION: us-east-1
+      STAGE: ${{ github.ref_name == 'main' && 'prod' || 'dev' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Serverless CLI
+        run: npm i -g serverless@latest
+
+      - name: Show versions
+        run: |
+          node -v
+          sls --version
+
+      # (Opcional) Login a Serverless Pro con Access Key (evita abrir navegador)
+      - name: Serverless Pro login
+        if: ${{ secrets.SLS_ACCESS_KEY != '' }}
+        run: sls login --apiKey ${{ secrets.SLS_ACCESS_KEY }}
+
+      - name: Deploy (Compose)
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ env.AWS_REGION }}
+        run: |
+          sls deploy --config serverless-compose.yml --stage $STAGE --region $AWS_REGION -v
