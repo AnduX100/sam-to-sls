@@ -10,8 +10,9 @@ provider:
 resources:
   - ${file(resources.yml)}
 
-# Outputs exportados para que otros servicios los lean
 outputs:
   VpcId: ${cf:${self:service}-${self:provider.stage}.VpcId}
-  PrivateSubnetIds: ${cf:${self:service}-${self:provider.stage}.PrivateSubnetIds}
+  PrivateSubnet1Id: ${cf:${self:service}-${self:provider.stage}.PrivateSubnet1Id}
+  PrivateSubnet2Id: ${cf:${self:service}-${self:provider.stage}.PrivateSubnet2Id}
   SecurityGroupId: ${cf:${self:service}-${self:provider.stage}.SecurityGroupId}
+
