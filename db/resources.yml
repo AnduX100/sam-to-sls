@@ -1,0 +1,7 @@
+Resources:
+
+Outputs:
+  AppTableName:
+    Value: !Ref AWS::NoValue
+    Export:
+      Name: !Sub '${AWS::StackName}-AppTableName'
