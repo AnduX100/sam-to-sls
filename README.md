@@ -1,4 +1,4 @@
-# SAM to Serverless (Monorepo con Serverless Compose).
+# SAM to Serverless (Monorepo con Serverless Compose)
 
 Servicios:
 - vpc/  (VPC aislada)
