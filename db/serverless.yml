@@ -1,4 +1,4 @@
-service: db
+service: sam2sls-db
 frameworkVersion: '3'
 
 provider:
