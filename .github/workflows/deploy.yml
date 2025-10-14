@@ -20,9 +20,7 @@ jobs:
       - name: Install Serverless CLI
         run: npm i -g serverless@latest
 
-      - name: Serverless Pro login (optional)
-        if: ${{ secrets.SLS_ACCESS_KEY != '' }}
-        run: sls login --apiKey ${{ secrets.SLS_ACCESS_KEY }}
+      # --- SIN paso de Serverless Pro; así evitamos el 'if' con secrets ---
 
       - name: Install AWS CLI
         run: |
