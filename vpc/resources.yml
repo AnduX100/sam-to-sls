@@ -1,0 +1,9 @@
+Resources:
+
+Outputs:
+  VpcId:
+    Value: !Ref AWS::NoValue
+  PrivateSubnetIds:
+    Value: !Ref AWS::NoValue
+  SecurityGroupId:
+    Value: !Ref AWS::NoValue
