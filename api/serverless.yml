@@ -24,3 +24,13 @@ package:
   patterns:
     - '!**/*'
     - 'handler.js'
+
+  
+provider:
+  vpc:
+    securityGroupIds:
+      - ${cf:vpc-${self:provider.stage}.SecurityGroupId}
+    subnetIds:
+      - ${cf:vpc-${self:provider.stage}.PrivateSubnet1Id}
+      - ${cf:vpc-${self:provider.stage}.PrivateSubnet2Id}
+
