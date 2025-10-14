@@ -6,8 +6,50 @@ provider:
   runtime: nodejs18.x
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-east-1'}
+
+  # Variables de entorno dinámicas (tabla de DB)
   environment:
     TABLE_NAME: ${cf:db-${self:provider.stage}.AppTableName}
+
+  # Conexión a la VPC aislada (subredes privadas + SG)
+  vpc:
+    securityGroupIds:
+      - ${cf:vpc-${self:provider.stage}.SecurityGroupId}
+    subnetIds:
+      - ${cf:vpc-${self:provider.stage}.PrivateSubnet1Id}
+      - ${cf:vpc-${self:provider.stage}.PrivateSubnet2Id}
+
+  # Trazas y logs
+  tracing:
+    apiGateway: true
+    lambda: true
+  logs:
+    httpApi: true
+
+  # Permisos mínimos (DynamoDB + X-Ray)
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:GetItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+            - dynamodb:Query
+          Resource:
+            - arn:aws:dynamodb:${self:provider.region}:${aws:accountId}:table/${env:TABLE_NAME}
+        - Effect: Allow
+          Action:
+            - xray:PutTraceSegments
+            - xray:PutTelemetryRecords
+          Resource: "*"
+
+package:
+  individually: true
+  patterns:
+    - '!**/*'
+    - 'handler.js'
 
 functions:
   hello:
@@ -18,19 +60,4 @@ functions:
       - httpApi:
           method: GET
           path: /hello
-
-package:
-  individually: true
-  patterns:
-    - '!**/*'
-    - 'handler.js'
-
-  
-provider:
-  vpc:
-    securityGroupIds:
-      - ${cf:vpc-${self:provider.stage}.SecurityGroupId}
-    subnetIds:
-      - ${cf:vpc-${self:provider.stage}.PrivateSubnet1Id}
-      - ${cf:vpc-${self:provider.stage}.PrivateSubnet2Id}
 
