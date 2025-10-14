@@ -20,18 +20,14 @@ jobs:
       - name: Install Serverless CLI
         run: npm i -g serverless@latest
 
-      # (Opcional) Serverless Pro
-      - name: Serverless Pro login (optional)
-        if: ${{ secrets.SLS_ACCESS_KEY != '' }}
-        run: sls login --apiKey ${{ secrets.SLS_ACCESS_KEY }}
-
+      # --- Despliegues por servicio (SIN pasos opcionales de Pro ni AWS CLI) ---
       - name: Deploy VPC
         working-directory: vpc
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ env.AWS_REGION }}
-        run: sls deploy --stage $STAGE --region $AWS_REGION -v --debug
+        run: sls deploy --stage $STAGE --region $AWS_REGION -v
 
       - name: Deploy DB
         working-directory: db
@@ -39,7 +35,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ env.AWS_REGION }}
-        run: sls deploy --stage $STAGE --region $AWS_REGION -v --debug
+        run: sls deploy --stage $STAGE --region $AWS_REGION -v
 
       - name: Deploy API
         working-directory: api
@@ -47,4 +43,4 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ env.AWS_REGION }}
-        run: sls deploy --stage $STAGE --region $AWS_REGION -v --debug
+        run: sls deploy --stage $STAGE --region $AWS_REGION -v
