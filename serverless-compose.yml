@@ -1,0 +1,11 @@
+services:
+  vpc:
+    path: ./vpc
+  db:
+    path: ./db
+    dependsOn:
+      - vpc
+  api:
+    path: ./api
+    dependsOn:
+      - db
