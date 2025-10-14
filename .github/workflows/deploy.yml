@@ -2,7 +2,7 @@ name: deploy
 on:
   push:
     branches: [main, dev]
-    
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -16,12 +16,28 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+
       - name: Install Serverless CLI (v3)
         run: |
           npm i -g serverless@3
           sls --version
 
-      # --- Despliegues por servicio (SIN pasos opcionales de Pro ni AWS CLI) ---
+      # Instala AWS CLI con pip (para ver cuenta/stack names desde el job)
+      - name: Install AWS CLI via pip
+        run: |
+          python3 -m pip install --user --upgrade pip
+          python3 -m pip install --user awscli
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          aws --version
+
+      - name: STS whoami (cuenta/usuario usados)
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ env.AWS_REGION }}
+        run: aws sts get-caller-identity
+
+      # --- VPC ---
       - name: Deploy VPC
         working-directory: vpc
         env:
@@ -30,6 +46,15 @@ jobs:
           AWS_DEFAULT_REGION: ${{ env.AWS_REGION }}
         run: sls deploy --stage $STAGE --region $AWS_REGION -v
 
+      - name: Info VPC (stack name)
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ env.AWS_REGION }}
+        run: |
+          aws cloudformation describe-stacks --stack-name sam2sls-vpc-$STAGE --query 'Stacks[0].StackStatus'
+
+      # --- DB ---
       - name: Deploy DB
         working-directory: db
         env:
@@ -38,6 +63,15 @@ jobs:
           AWS_DEFAULT_REGION: ${{ env.AWS_REGION }}
         run: sls deploy --stage $STAGE --region $AWS_REGION -v
 
+      - name: Info DB (stack name)
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ env.AWS_REGION }}
+        run: |
+          aws cloudformation describe-stacks --stack-name sam2sls-db-$STAGE --query 'Stacks[0].Outputs'
+
+      # --- API ---
       - name: Deploy API
         working-directory: api
         env:
@@ -45,3 +79,11 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ env.AWS_REGION }}
         run: sls deploy --stage $STAGE --region $AWS_REGION -v
+
+      - name: Info API (stack name)
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ env.AWS_REGION }}
+        run: |
+          aws cloudformation describe-stacks --stack-name sam2sls-api-$STAGE --query 'Stacks[0].StackStatus'
