@@ -52,12 +52,59 @@ package:
     - 'handler.js'
 
 functions:
-  hello:
-    handler: handler.hello
+  # CREATE  -> POST /items
+  createItem:
+    handler: handler.createItem
+    memorySize: 256
+    timeout: 10
+    events:
+      - httpApi:
+          method: POST
+          path: /items
+          cors: true
+
+  # READ    -> GET /items/{id}
+  getItem:
+    handler: handler.getItem
     memorySize: 256
     timeout: 10
     events:
       - httpApi:
           method: GET
-          path: /hello
+          path: /items/{id}
+          cors: true
+
+  # UPDATE  -> PUT /items/{id}
+  updateItem:
+    handler: handler.updateItem
+    memorySize: 256
+    timeout: 10
+    events:
+      - httpApi:
+          method: PUT
+          path: /items/{id}
+          cors: true
+
+  # DELETE  -> DELETE /items/{id}
+  deleteItem:
+    handler: handler.deleteItem
+    memorySize: 256
+    timeout: 10
+    events:
+      - httpApi:
+          method: DELETE
+          path: /items/{id}
+          cors: true
+
+  # LIST    -> GET /items   (usa Scan simple)
+  listItems:
+    handler: handler.listItems
+    memorySize: 256
+    timeout: 10
+    events:
+      - httpApi:
+          method: GET
+          path: /items
+          cors: true
+
 
